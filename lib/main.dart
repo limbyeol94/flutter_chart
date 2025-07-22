@@ -3,6 +3,9 @@ import 'package:flutter_chart/index.dart';
 import 'package:flutter_chart/common/widgets/layout.dart';
 import 'package:flutter_chart/screens/custom_chart/index.dart';
 import 'package:flutter_chart/screens/fl_chart/fl_bar_chart.dart';
+import 'package:flutter_chart/screens/fl_chart/fl_line_chart.dart';
+import 'package:flutter_chart/screens/fl_chart/fl_health_line_chart.dart';
+import 'package:flutter_chart/screens/fl_chart/fl_hourly_step_chart.dart';
 import 'package:flutter_chart/screens/fl_chart/index.dart';
 
 void main() {
@@ -22,10 +25,18 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       routes: {
+        // Hme
         Index.routeName: (context) => Layout(child: const Index()),
+        // Fl Chart
         FlChartIndex.routeName: (context) =>
             Layout(child: const FlChartIndex()),
         FlBarChart.routeName: (context) => Layout(child: const FlBarChart()),
+        FlLineChart.routeName: (context) => Layout(child: const FlLineChart()),
+        FlHealthLineChart.routeName: (context) =>
+            Layout(child: const FlHealthLineChart()),
+        FlHourlyStepChart.routeName: (context) =>
+            Layout(child: const FlHourlyStepChart()),
+        // Custom Chart
         CustomChartIndex.routeName: (context) =>
             Layout(child: const CustomChartIndex()),
       },

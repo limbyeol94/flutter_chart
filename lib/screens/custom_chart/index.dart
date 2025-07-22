@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chart/screens/fl_chart/fl_bar_chart.dart';
+import 'custom_chart_screen.dart';
 
 class CustomChartIndex extends StatelessWidget {
   const CustomChartIndex({super.key});
@@ -8,17 +9,6 @@ class CustomChartIndex extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 20,
-      runSpacing: 10,
-      children: [
-        InkWell(
-          onTap: () {
-            // Navigator.pushNamed(context, FlBarChart.routeName);
-          },
-          child: const Text('custom Chart'),
-        ),
-      ],
-    );
+    return const CustomChartContent();
   }
 }
