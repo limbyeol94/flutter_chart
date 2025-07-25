@@ -31,80 +31,24 @@ class _CustomChartContentState extends State<CustomChartContent> {
   Future<void> _loadTestData() async {
     // 테스트 데이터 생성 - 첫 번째 데이터 세트
     final List<Map<String, dynamic>> testStepRecords1 = [
-      {
-        'type': 'HKQuantityTypeIdentifierStepCount',
-        'startDate': '2024-06-07T10:00:00+0900',
-        'value': '1200'
-      },
-      {
-        'type': 'HKQuantityTypeIdentifierStepCount',
-        'startDate': '2024-06-08T10:00:00+0900',
-        'value': '1500'
-      },
-      {
-        'type': 'HKQuantityTypeIdentifierStepCount',
-        'startDate': '2024-06-09T10:00:00+0900',
-        'value': '900'
-      },
-      {
-        'type': 'HKQuantityTypeIdentifierStepCount',
-        'startDate': '2024-06-10T10:00:00+0900',
-        'value': '2000'
-      },
-      {
-        'type': 'HKQuantityTypeIdentifierStepCount',
-        'startDate': '2024-06-11T10:00:00+0900',
-        'value': '800'
-      },
-      {
-        'type': 'HKQuantityTypeIdentifierStepCount',
-        'startDate': '2024-06-12T10:00:00+0900',
-        'value': '1700'
-      },
-      {
-        'type': 'HKQuantityTypeIdentifierStepCount',
-        'startDate': '2024-06-13T10:00:00+0900',
-        'value': '1800'
-      },
+      {'type': 'HKQuantityTypeIdentifierStepCount', 'startDate': '2024-06-07T10:00:00+0900', 'value': '1200'},
+      {'type': 'HKQuantityTypeIdentifierStepCount', 'startDate': '2024-06-08T10:00:00+0900', 'value': '1500'},
+      {'type': 'HKQuantityTypeIdentifierStepCount', 'startDate': '2024-06-09T10:00:00+0900', 'value': '900'},
+      {'type': 'HKQuantityTypeIdentifierStepCount', 'startDate': '2024-06-10T10:00:00+0900', 'value': '2000'},
+      {'type': 'HKQuantityTypeIdentifierStepCount', 'startDate': '2024-06-11T10:00:00+0900', 'value': '800'},
+      {'type': 'HKQuantityTypeIdentifierStepCount', 'startDate': '2024-06-12T10:00:00+0900', 'value': '1700'},
+      {'type': 'HKQuantityTypeIdentifierStepCount', 'startDate': '2024-06-13T10:00:00+0900', 'value': '1800'},
     ];
 
     // 두 번째 데이터 세트 (다른 패턴)
     final List<Map<String, dynamic>> testStepRecords2 = [
-      {
-        'type': 'HKQuantityTypeIdentifierStepCount',
-        'startDate': '2024-06-07T10:00:00+0900',
-        'value': '800'
-      },
-      {
-        'type': 'HKQuantityTypeIdentifierStepCount',
-        'startDate': '2024-06-08T10:00:00+0900',
-        'value': '2200'
-      },
-      {
-        'type': 'HKQuantityTypeIdentifierStepCount',
-        'startDate': '2024-06-09T10:00:00+0900',
-        'value': '1100'
-      },
-      {
-        'type': 'HKQuantityTypeIdentifierStepCount',
-        'startDate': '2024-06-10T10:00:00+0900',
-        'value': '1600'
-      },
-      {
-        'type': 'HKQuantityTypeIdentifierStepCount',
-        'startDate': '2024-06-11T10:00:00+0900',
-        'value': '1300'
-      },
-      {
-        'type': 'HKQuantityTypeIdentifierStepCount',
-        'startDate': '2024-06-12T10:00:00+0900',
-        'value': '1900'
-      },
-      {
-        'type': 'HKQuantityTypeIdentifierStepCount',
-        'startDate': '2024-06-13T10:00:00+0900',
-        'value': '1400'
-      },
+      {'type': 'HKQuantityTypeIdentifierStepCount', 'startDate': '2024-06-07T10:00:00+0900', 'value': '800'},
+      {'type': 'HKQuantityTypeIdentifierStepCount', 'startDate': '2024-06-08T10:00:00+0900', 'value': '2200'},
+      {'type': 'HKQuantityTypeIdentifierStepCount', 'startDate': '2024-06-09T10:00:00+0900', 'value': '1100'},
+      {'type': 'HKQuantityTypeIdentifierStepCount', 'startDate': '2024-06-10T10:00:00+0900', 'value': '1600'},
+      {'type': 'HKQuantityTypeIdentifierStepCount', 'startDate': '2024-06-11T10:00:00+0900', 'value': '1300'},
+      {'type': 'HKQuantityTypeIdentifierStepCount', 'startDate': '2024-06-12T10:00:00+0900', 'value': '1900'},
+      {'type': 'HKQuantityTypeIdentifierStepCount', 'startDate': '2024-06-13T10:00:00+0900', 'value': '1400'},
     ];
 
     // 데이터 가공 - 첫 번째 데이터 세트
@@ -116,8 +60,7 @@ class _CustomChartContentState extends State<CustomChartContent> {
     final dailyData2 = Map<String, int>.from(data2['dailyData'] ?? {});
 
     // 막대 차트 데이터 변환 (첫 번째 데이터 사용)
-    final sortedEntries1 = dailyData1.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
+    final sortedEntries1 = dailyData1.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
 
     barChartData = sortedEntries1.map((entry) {
       return BarData(
@@ -135,8 +78,7 @@ class _CustomChartContentState extends State<CustomChartContent> {
     }).toList();
 
     // 두 번째 라인 차트 데이터 변환
-    final sortedEntries2 = dailyData2.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
+    final sortedEntries2 = dailyData2.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
 
     lineChartData2 = sortedEntries2.map((entry) {
       return LineData(
@@ -251,43 +193,47 @@ class _CustomChartContentState extends State<CustomChartContent> {
                 // 통합 차트 (라인 + 막대)
                 Card(
                   elevation: 4,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        '통합 차트 (라인 + 막대)',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '통합 차트 (라인 + 막대)',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        '하나의 그래프 안에서 같은 데이터를 막대와 라인으로 동시에 표시',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
+                        const SizedBox(height: 8),
+                        const Text(
+                          '하나의 그래프 안에서 같은 데이터를 막대와 라인으로 동시에 표시',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        height: 400,
-                        child: UnifiedChart(
-                          data: combinedChartData,
-                          barColor: Colors.blue,
-                          lineColor: Colors.green,
-                          showGrid: true,
-                          showLabels: true,
-                          showPoints: true,
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          height: 400,
+                          child: UnifiedChart(
+                            barData: combinedChartData,
+                            lineData: combinedChartData2,
+                            barColor: Colors.blue,
+                            lineColor: Colors.green,
+                            showGrid: true,
+                            showLabels: true,
+                            showPoints: true,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
 
                 // 좌표 계산 및 그리기 가이드
-                const ChartCoordinateGuide(),
+                // const ChartCoordinateGuide(),
               ],
             ),
           );

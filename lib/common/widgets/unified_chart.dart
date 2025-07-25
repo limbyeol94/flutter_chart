@@ -3,21 +3,31 @@ import 'package:flutter_chart/common/widgets/combined_chart.dart';
 import 'dart:math' as math;
 
 class UnifiedChart extends StatefulWidget {
-  final List<ChartData> data;
+  final List<ChartData> barData;
+  final List<ChartData> lineData;
   final Color barColor;
   final Color lineColor;
   final bool showGrid;
   final bool showLabels;
   final bool showPoints;
+  final double lineWidth;
+  final double barWidth;
+  final double padding;
+  final double gridCount;
 
   const UnifiedChart({
     super.key,
-    required this.data,
+    required this.barData,
+    required this.lineData,
     this.barColor = Colors.blue,
     this.lineColor = Colors.green,
     this.showGrid = true,
     this.showLabels = true,
     this.showPoints = true,
+    this.lineWidth = 3.0,
+    this.barWidth = 30.0,
+    this.padding = 40,
+    this.gridCount = 5,
   });
 
   @override
@@ -32,12 +42,17 @@ class _UnifiedChartState extends State<UnifiedChart> {
         return CustomPaint(
           size: Size(constraints.maxWidth, constraints.maxHeight),
           painter: _UnifiedChartPainter(
-            data: widget.data,
+            barData: widget.barData,
+            lineData: widget.lineData,
             barColor: widget.barColor,
             lineColor: widget.lineColor,
             showGrid: widget.showGrid,
             showLabels: widget.showLabels,
             showPoints: widget.showPoints,
+            lineWidth: widget.lineWidth,
+            barWidth: widget.barWidth,
+            padding: widget.padding,
+            gridCount: widget.gridCount,
           ),
         );
       },
@@ -46,183 +61,54 @@ class _UnifiedChartState extends State<UnifiedChart> {
 }
 
 class _UnifiedChartPainter extends CustomPainter {
-  final List<ChartData> data;
+  final List<ChartData> barData;
+  final List<ChartData> lineData;
   final Color barColor;
   final Color lineColor;
   final bool showGrid;
   final bool showLabels;
   final bool showPoints;
-
+  final double lineWidth;
+  final double barWidth;
+  final double padding;
+  final double gridCount;
   _UnifiedChartPainter({
-    required this.data,
+    required this.barData,
+    required this.lineData,
     required this.barColor,
     required this.lineColor,
     required this.showGrid,
     required this.showLabels,
     required this.showPoints,
+    required this.lineWidth,
+    required this.barWidth,
+    required this.padding,
+    required this.gridCount,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (data.isEmpty) return;
+    if (barData.isEmpty) return;
 
-    // 1. 좌표 계산 가이드
-    final coordinates = _calculateCoordinates(size);
-
-    // 2. 배경 그리기
-    _drawBackground(canvas, size);
-
-    double labelWidth = 0.0;
-    double totalGridWidth = 0.0;
-
-    // 3. 격자 그리기
-    if (showGrid) {
-      labelWidth = _drawGrid(
-        canvas: canvas,
-        size: size,
-        maxValue: coordinates['maxValue'],
-        minValue: coordinates['minValue'],
-        padding: coordinates['padding'],
-        labelHeight: coordinates['labelHeight'],
-        valueHeight: coordinates['valueHeight'],
-        chartHeight: coordinates['chartHeight'],
-        valueRange: coordinates['valueRange'],
-      );
-    }
-
-    totalGridWidth = (coordinates['barWidth'] * data.length) +
-        (coordinates['barSpacing'] * (data.length - 1)) -
-        labelWidth * 2 -
-        coordinates['padding'] * 2;
-    final chartStartX = (totalGridWidth + labelWidth) / 2;
-    // 4. 막대 그리기 (배경)
-    _drawBars(
-      canvas: canvas,
-      size: size,
-      maxValue: coordinates['maxValue'],
-      minValue: coordinates['minValue'],
-      padding: coordinates['padding'],
-      labelHeight: coordinates['labelHeight'],
-      valueHeight: coordinates['valueHeight'],
-      chartHeight: coordinates['chartHeight'],
-      valueRange: coordinates['valueRange'],
-      barWidth: coordinates['barWidth'],
-      barSpacing: coordinates['barSpacing'],
-      labelWidth: labelWidth,
-      totalBarWidth: totalGridWidth,
-      startX: chartStartX,
-    );
-
-    // 5. 라인 그리기 (전경)
-    _drawLine(
-      canvas: canvas,
-      size: size,
-      maxValue: coordinates['maxValue'],
-      minValue: coordinates['minValue'],
-      padding: coordinates['padding'],
-      labelHeight: coordinates['labelHeight'],
-      valueHeight: coordinates['valueHeight'],
-      chartHeight: coordinates['chartHeight'],
-      valueRange: coordinates['valueRange'],
-      barWidth: coordinates['barWidth'],
-      barSpacing: coordinates['barSpacing'],
-      totalBarWidth: totalGridWidth,
-      startX: chartStartX,
-    );
-
-    // 6. 포인트 그리기
-    if (showPoints) {
-      _drawPoints(
-        canvas: canvas,
-        size: size,
-        maxValue: coordinates['maxValue'],
-        minValue: coordinates['minValue'],
-        padding: coordinates['padding'],
-        labelHeight: coordinates['labelHeight'],
-        valueHeight: coordinates['valueHeight'],
-        chartHeight: coordinates['chartHeight'],
-        valueRange: coordinates['valueRange'],
-        barWidth: coordinates['barWidth'],
-        barSpacing: coordinates['barSpacing'],
-        startX: chartStartX,
-      );
-    }
-
-    // 7. 라벨 그리기
-    if (showLabels) {
-      _drawLabels(
-        canvas: canvas,
-        size: size,
-        padding: coordinates['padding'],
-        labelHeight: coordinates['labelHeight'],
-        barWidth: coordinates['barWidth'],
-        barSpacing: coordinates['barSpacing'],
-        totalBarWidth: totalGridWidth,
-        startX: chartStartX,
-      );
-    }
-  }
-
-  // 통합 좌표 계산 가이드
-  Map<String, dynamic> _calculateCoordinates(Size size) {
-    // print('=== 통합 차트 좌표 계산 가이드 ===');
-    // print('캔버스 크기: ${size.width} x ${size.height}');
-    // print('데이터 개수: ${data.length}');
-
-    // 최대값과 최소값 찾기 (최소값은 0으로 고정)
-    final maxValue = data.map((d) => d.value).reduce(math.max);
-    final minValue = 0.0; // 최소값을 0으로 고정
-    // print('최대값: $maxValue, 최소값: $minValue (고정)');
+    // 1. [공통] 좌표 계산
+    final maxValue = barData.map((d) => d.value).reduce(math.max);
+    const minValue = 0.0; // 최소값을 0으로 고정
 
     // 여백 계산
-    final padding = 40.0;
-    final labelHeight = 30.0;
-    final valueHeight = 20.0;
+    const labelHeight = 30.0;
+    const valueHeight = 20.0;
 
     // 차트 영역 계산
-    // final chartWidth = size.width - (padding * 2);
-    final chartWidth = size.width - (padding * 2);
-    // final chartWidth = size.width - (padding * 2);
+    final chartWidth = (size.width - (padding * 2)) - barWidth;
     final chartHeight = size.height - (padding * 2) - labelHeight - valueHeight;
 
-    // print('차트 영역: ${chartWidth} x ${chartHeight}');
-
-    // 막대 설정
-    // final barWidth = 20.0;
-    double barWidth = chartWidth / data.length;
-    double barSpacing = barWidth * 0.5;
-    barWidth = barWidth - barSpacing;
-    final totalBarWidth =
-        (barWidth * data.length) + (barSpacing * (data.length - 1));
-    final startX = (size.width - totalBarWidth) / 2;
-
-    // print('총 막대 너비: $totalBarWidth');
-    // print('시작 X 좌표: $startX');
+    final xScale = chartWidth / (barData.length - 1);
 
     // Y축 스케일 계산 (최소값부터 시작)
     final valueRange = maxValue - minValue;
     final yScale = chartHeight / valueRange;
-    // print('Y축 스케일: $yScale (1단위당 픽셀)');
 
-    // 각 데이터 포인트의 좌표 계산 (막대와 라인 동일)
-    for (int i = 0; i < data.length; i++) {
-      final pointData = data[i];
-      final x =
-          startX + (i * (barWidth + barSpacing)) + (barWidth / 2); // 막대 중심점
-      final y = size.height -
-          padding -
-          labelHeight -
-          ((pointData.value - minValue) * yScale);
-
-      // print('포인트 ${i + 1} (${pointData.label}):');
-      // print('  - X: $x');
-      // print('  - Y: $y');
-      // print('  - 값: ${pointData.value}');
-      // print(
-      // '  - 막대 중심: ${startX + (i * (barWidth + barSpacing)) + (barWidth / 2)}');
-    }
-    // print('================================');
-    return {
+    Map<String, double> barValue = {
       'maxValue': maxValue,
       'minValue': minValue,
       'padding': padding,
@@ -230,13 +116,37 @@ class _UnifiedChartPainter extends CustomPainter {
       'valueHeight': valueHeight,
       'chartWidth': chartWidth,
       'chartHeight': chartHeight,
-      // 'startX': startX,
       'yScale': yScale,
-      'barWidth': barWidth,
-      'barSpacing': barSpacing,
-      // 'totalBarWidth': totalBarWidth,
+      'xScale': xScale,
       'valueRange': valueRange,
     };
+
+    // 2. 배경 그리기
+    _drawBackground(canvas, size);
+
+    // double labelWidth = 0.0;
+    // double totalGridWidth = 0.0;
+
+    // 3. 격자 그리기
+    if (showGrid) {
+      _drawGrid(canvas, size, barValue);
+    }
+
+    // 4. 막대 그리기 (배경)
+    _drawBars(canvas, size, barValue);
+
+    // 5. 라인 그리기 (전경)
+    _drawLine(canvas, size, barValue);
+
+    // 6. 포인트 그리기
+    if (showPoints) {
+      _drawPoints(canvas, size, barValue);
+    }
+
+    // 7. 라벨 그리기
+    if (showLabels) {
+      _drawLabels(canvas, size, barValue);
+    }
   }
 
   void _drawBackground(Canvas canvas, Size size) {
@@ -247,26 +157,24 @@ class _UnifiedChartPainter extends CustomPainter {
     canvas.drawRect(Offset.zero & size, paint);
   }
 
-  double _drawGrid(
-      {required Canvas canvas,
-      required Size size,
-      required double maxValue,
-      required double minValue,
-      required double padding,
-      required double labelHeight,
-      required double valueHeight,
-      required double chartHeight,
-      required double valueRange}) {
+  void _drawGrid(Canvas canvas, Size size, Map<String, double> valueMap) {
     final paint = Paint()
       ..color = Colors.grey.withOpacity(0.3)
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
-    List<double> valueWidths = [];
+    // final maxValue = valueMap['maxValue']!;
+    final minValue = valueMap['minValue']!;
+    final padding = valueMap['padding']!;
+    // const labelHeight = 30.0;
+    // const valueHeight = 20.0;
+    final chartHeight = valueMap['chartHeight']!;
+    final valueRange = valueMap['valueRange']!;
+
     // 수평 격자선 그리기 (5개 구간)
-    for (int i = 0; i <= 5; i++) {
-      final y = padding + (chartHeight * i / 5);
-      final value = minValue + (valueRange * (5 - i) / 5);
+    for (int i = 0; i <= gridCount; i++) {
+      final y = padding + (chartHeight * i / gridCount);
+      final value = minValue + (valueRange * (gridCount - i) / gridCount);
 
       canvas.drawLine(
         Offset(padding, y),
@@ -286,44 +194,33 @@ class _UnifiedChartPainter extends CustomPainter {
         textDirection: TextDirection.ltr,
       );
       textPainter.layout();
-      valueWidths.add(textPainter.width);
-
       textPainter.paint(
         canvas,
         Offset(5, y - textPainter.height / 2),
       );
     }
-    final maxWidth = valueWidths.map((d) => d).reduce(math.max);
-    return maxWidth;
   }
 
-  void _drawBars(
-      {required Canvas canvas,
-      required Size size,
-      required double maxValue,
-      required double minValue,
-      required double padding,
-      required double labelHeight,
-      required double valueHeight,
-      required double chartHeight,
-      required double valueRange,
-      required double barWidth,
-      required double barSpacing,
-      required double labelWidth,
-      required double totalBarWidth,
-      required double startX}) {
-    // final startX = (totalBarWidth + labelWidth) / 2;
+  void _drawBars(Canvas canvas, Size size, Map<String, double> valueMap) {
+    final minValue = valueMap['minValue']!;
+    final padding = valueMap['padding']!;
+    final labelHeight = valueMap['labelHeight']!;
+    final chartHeight = valueMap['chartHeight']!;
+    final valueRange = valueMap['valueRange']!;
+    // const barWidth = 20.0;
+
+    // 스케일 계산
+    final xScale = valueMap['xScale']!;
 
     final paint = Paint()
       ..color = barColor.withOpacity(0.3)
       ..style = PaintingStyle.fill;
 
-    for (int i = 0; i < data.length; i++) {
-      final pointData = data[i];
-      final barX = startX + (i * (barWidth + barSpacing));
-      final barHeight =
-          (pointData.value - minValue) * (chartHeight / valueRange);
-      final barY = size.height - padding - labelHeight - barHeight;
+    for (int i = 0; i < barData.length; i++) {
+      final pointData = barData[i];
+      final barX = padding + (i * xScale);
+      final barHeight = (pointData.value - minValue) * (chartHeight / valueRange);
+      final barY = size.height - padding - labelHeight - barHeight - 20;
 
       canvas.drawRect(
         Rect.fromLTWH(barX, barY, barWidth, barHeight),
@@ -332,36 +229,32 @@ class _UnifiedChartPainter extends CustomPainter {
     }
   }
 
-  void _drawLine(
-      {required Canvas canvas,
-      required Size size,
-      required double maxValue,
-      required double minValue,
-      required double padding,
-      required double labelHeight,
-      required double valueHeight,
-      required double chartHeight,
-      required double valueRange,
-      required double barWidth,
-      required double barSpacing,
-      required double totalBarWidth,
-      required double startX}) {
+  void _drawLine(Canvas canvas, Size size, Map<String, double> valueMap) {
+    if (lineData.length < 2) return;
+
+    final minValue = valueMap['minValue']!;
+    final padding = valueMap['padding']!;
+    final labelHeight = valueMap['labelHeight']!;
+
+    // 스케일 계산
+    final xScale = valueMap['xScale']!;
+    final yScale = valueMap['yScale']!;
+
     final paint = Paint()
       ..color = lineColor
-      ..strokeWidth = 4.0
+      ..strokeWidth = lineWidth
       ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
 
+    // 라인 그리기
     final path = Path();
     bool isFirst = true;
 
-    for (int i = 0; i < data.length; i++) {
-      final pointData = data[i];
-      final x = startX + (i * (barWidth + barSpacing)) + (barWidth / 2);
-      final y = size.height -
-          padding -
-          labelHeight -
-          ((pointData.value - minValue) * (chartHeight / valueRange));
+    for (int i = 0; i < lineData.length; i++) {
+      final pointData = lineData[i];
+      final x = padding + (i * xScale) + (barWidth / 2);
+      final y = size.height - padding - labelHeight - ((pointData.value - minValue) * yScale) - 20;
 
       if (isFirst) {
         path.moveTo(x, y);
@@ -374,30 +267,22 @@ class _UnifiedChartPainter extends CustomPainter {
     canvas.drawPath(path, paint);
   }
 
-  void _drawPoints(
-      {required Canvas canvas,
-      required Size size,
-      required double maxValue,
-      required double minValue,
-      required double padding,
-      required double labelHeight,
-      required double valueHeight,
-      required double chartHeight,
-      required double valueRange,
-      required double barWidth,
-      required double barSpacing,
-      required double startX}) {
+  void _drawPoints(Canvas canvas, Size size, Map<String, double> valueMap) {
+    final minValue = valueMap['minValue']!;
+    final padding = valueMap['padding']!;
+    final labelHeight = valueMap['labelHeight']!;
+    // 스케일 계산
+    final xScale = valueMap['xScale']!;
+    final yScale = valueMap['yScale']!;
+
     final paint = Paint()
       ..color = lineColor
       ..style = PaintingStyle.fill;
 
-    for (int i = 0; i < data.length; i++) {
-      final pointData = data[i];
-      final x = startX + (i * (barWidth + barSpacing)) + (barWidth / 2);
-      final y = size.height -
-          padding -
-          labelHeight -
-          ((pointData.value - minValue) * (chartHeight / valueRange));
+    for (int i = 0; i < lineData.length; i++) {
+      final pointData = lineData[i];
+      final x = padding + (i * xScale) + (barWidth / 2);
+      final y = size.height - padding - labelHeight - ((pointData.value - minValue) * yScale) - 20;
 
       canvas.drawCircle(Offset(x, y), 6.0, paint);
 
@@ -410,19 +295,17 @@ class _UnifiedChartPainter extends CustomPainter {
     }
   }
 
-  void _drawLabels(
-      {required Canvas canvas,
-      required Size size,
-      required double padding,
-      required double labelHeight,
-      required double barWidth,
-      required double barSpacing,
-      required double totalBarWidth,
-      required double startX}) {
-    for (int i = 0; i < data.length; i++) {
-      final pointData = data[i];
-      final x = startX + (i * (barWidth + barSpacing)) + (barWidth / 2);
-      final y = size.height - padding + 5;
+  void _drawLabels(Canvas canvas, Size size, Map<String, double> valueMap) {
+    final padding = valueMap['padding']!;
+    final labelHeight = valueMap['labelHeight']!;
+    // final chartWidth = valueMap['chartWidth']!;
+    final xScale = valueMap['xScale']!;
+
+    // 각 라벨 그리기
+    for (int i = 0; i < lineData.length; i++) {
+      final pointData = lineData[i];
+      final x = padding + (i * xScale) + (barWidth / 2);
+      final labelY = size.height - padding - labelHeight + 5;
 
       final textPainter = TextPainter(
         text: TextSpan(
@@ -430,7 +313,6 @@ class _UnifiedChartPainter extends CustomPainter {
           style: const TextStyle(
             fontSize: 12,
             color: Colors.black,
-            fontWeight: FontWeight.w500,
           ),
         ),
         textDirection: TextDirection.ltr,
@@ -438,7 +320,10 @@ class _UnifiedChartPainter extends CustomPainter {
       textPainter.layout();
       textPainter.paint(
         canvas,
-        Offset(x - textPainter.width / 2, y),
+        Offset(
+          x - textPainter.width / 2,
+          labelY,
+        ),
       );
     }
   }

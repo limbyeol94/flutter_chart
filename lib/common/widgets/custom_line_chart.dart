@@ -81,27 +81,84 @@ class _LineChartPainter extends CustomPainter {
     if (data.isEmpty) return;
 
     // 1. 좌표 계산 가이드
-    _calculateCoordinates(size);
+    // _calculateCoordinates(size);
+
+    print('=== 라인 차트 좌표 계산 가이드 ===');
+    print('캔버스 크기: ${size.width} x ${size.height}');
+    print('데이터 개수: ${data.length}');
+
+    // 최대값과 최소값 찾기
+    final maxValue = data.map((d) => d.value).reduce(math.max);
+    final minValue = data.map((d) => d.value).reduce(math.min);
+    print('최대값: $maxValue, 최소값: $minValue');
+
+    // 여백 계산
+    const padding = 40.0;
+    const labelHeight = 30.0;
+    const valueHeight = 20.0;
+
+    // 차트 영역 계산
+    final chartWidth = size.width - (padding * 2);
+    final chartHeight = size.height - (padding * 2) - labelHeight - valueHeight;
+
+    print('차트 영역: $chartWidth x $chartHeight');
+
+    // X축 스케일 계산
+    final xScale = chartWidth / (data.length - 1);
+    print('X축 스케일: $xScale (1단위당 픽셀)');
+
+    // Y축 스케일 계산
+    final valueRange = maxValue - minValue;
+    final yScale = chartHeight / valueRange;
+    print('Y축 스케일: $yScale (1단위당 픽셀)');
+
+    // 각 포인트의 좌표 계산
+    // for (int i = 0; i < data.length; i++) {
+    //   final pointData = data[i];
+    //   final x = padding + (i * xScale);
+    //   final y = size.height - padding - labelHeight - ((pointData.value - minValue) * yScale);
+
+    //   print('포인트 ${i + 1} (${pointData.label}):');
+    //   print('  - X: $x');
+    //   print('  - Y: $y');
+    //   print('  - 값: ${pointData.value}');
+    // }
+    // _calculateValueMap(
+    Map<String, double> valueMap = {
+      'maxValue': maxValue,
+      'minValue': minValue,
+      'padding': padding,
+      'labelHeight': labelHeight,
+      'valueHeight': valueHeight,
+      'chartWidth': chartWidth,
+      'chartHeight': chartHeight,
+      'xScale': xScale,
+      'yScale': yScale,
+      'valueRange': valueRange,
+    };
+    // );
+
+    print('================================');
 
     // 2. 배경 그리기
-    _drawBackground(canvas, size);
+    _drawBackground(canvas, size, valueMap);
 
     // 3. 격자 그리기
     if (showGrid) {
-      _drawGrid(canvas, size);
+      _drawGrid(canvas, size, valueMap);
     }
 
     // 4. 라인 그리기
-    _drawLine(canvas, size);
+    _drawLine(canvas, size, valueMap);
 
     // 5. 포인트 그리기
     if (showPoints) {
-      _drawPoints(canvas, size);
+      _drawPoints(canvas, size, valueMap);
     }
 
     // 6. 라벨 그리기
     if (showLabels) {
-      _drawLabels(canvas, size);
+      _drawLabels(canvas, size, valueMap);
     }
   }
 
@@ -117,15 +174,15 @@ class _LineChartPainter extends CustomPainter {
     print('최대값: $maxValue, 최소값: $minValue');
 
     // 여백 계산
-    final padding = 40.0;
-    final labelHeight = 30.0;
-    final valueHeight = 20.0;
+    const padding = 40.0;
+    const labelHeight = 30.0;
+    const valueHeight = 20.0;
 
     // 차트 영역 계산
     final chartWidth = size.width - (padding * 2);
     final chartHeight = size.height - (padding * 2) - labelHeight - valueHeight;
 
-    print('차트 영역: ${chartWidth} x ${chartHeight}');
+    print('차트 영역: $chartWidth x $chartHeight');
 
     // X축 스케일 계산
     final xScale = chartWidth / (data.length - 1);
@@ -140,20 +197,32 @@ class _LineChartPainter extends CustomPainter {
     for (int i = 0; i < data.length; i++) {
       final pointData = data[i];
       final x = padding + (i * xScale);
-      final y = size.height -
-          padding -
-          labelHeight -
-          ((pointData.value - minValue) * yScale);
+      final y = size.height - padding - labelHeight - ((pointData.value - minValue) * yScale);
 
       print('포인트 ${i + 1} (${pointData.label}):');
       print('  - X: $x');
       print('  - Y: $y');
       print('  - 값: ${pointData.value}');
     }
+    // _calculateValueMap(
+    // valueMap = {
+    //   'maxValue': maxValue,
+    //   'minValue': minValue,
+    //   'padding': padding,
+    //   'labelHeight': labelHeight,
+    //   'valueHeight': valueHeight,
+    //   'chartWidth': chartWidth,
+    //   'chartHeight': chartHeight,
+    //   'xScale': xScale,
+    //   'yScale': yScale,
+    //   'valueRange': valueRange,
+    // };
+    // );
+
     print('================================');
   }
 
-  void _drawBackground(Canvas canvas, Size size) {
+  void _drawBackground(Canvas canvas, Size size, Map<String, double> valueMap) {
     final paint = Paint()
       ..color = backgroundColor
       ..style = PaintingStyle.fill;
@@ -161,19 +230,19 @@ class _LineChartPainter extends CustomPainter {
     canvas.drawRect(Offset.zero & size, paint);
   }
 
-  void _drawGrid(Canvas canvas, Size size) {
+  void _drawGrid(Canvas canvas, Size size, Map<String, double> valueMap) {
     final paint = Paint()
       ..color = Colors.grey.withOpacity(0.3)
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
-    final maxValue = data.map((d) => d.value).reduce(math.max);
-    final minValue = data.map((d) => d.value).reduce(math.min);
-    final padding = 40.0;
-    final labelHeight = 30.0;
-    final valueHeight = 20.0;
-    final chartHeight = size.height - (padding * 2) - labelHeight - valueHeight;
-    final valueRange = maxValue - minValue;
+    // final maxValue = valueMap['maxValue']!;
+    final minValue = valueMap['minValue']!;
+    final padding = valueMap['padding']!;
+    // const labelHeight = 30.0;
+    // const valueHeight = 20.0;
+    final chartHeight = valueMap['chartHeight']!;
+    final valueRange = valueMap['valueRange']!;
 
     // 수평 격자선 그리기 (5개 구간)
     for (int i = 0; i <= 5; i++) {
@@ -206,21 +275,21 @@ class _LineChartPainter extends CustomPainter {
     }
   }
 
-  void _drawLine(Canvas canvas, Size size) {
+  void _drawLine(Canvas canvas, Size size, Map<String, double> valueMap) {
     if (data.length < 2) return;
 
-    final maxValue = data.map((d) => d.value).reduce(math.max);
-    final minValue = data.map((d) => d.value).reduce(math.min);
-    final padding = 40.0;
-    final labelHeight = 30.0;
-    final valueHeight = 20.0;
-    final chartWidth = size.width - (padding * 2);
-    final chartHeight = size.height - (padding * 2) - labelHeight - valueHeight;
+    // final maxValue = valueMap['maxValue']!;
+    final minValue = valueMap['minValue']!;
+    final padding = valueMap['padding']!;
+    final labelHeight = valueMap['labelHeight']!;
+    // const valueHeight = 20.0;
+    // final chartWidth = valueMap['chartWidth']!;
+    // final chartHeight = valueMap['chartHeight']!;
 
     // 스케일 계산
-    final xScale = chartWidth / (data.length - 1);
-    final valueRange = maxValue - minValue;
-    final yScale = chartHeight / valueRange;
+    final xScale = valueMap['xScale']!;
+    // final valueRange = valueMap['valueRange']!;
+    final yScale = valueMap['yScale']!;
 
     final paint = Paint()
       ..color = lineColor
@@ -236,10 +305,7 @@ class _LineChartPainter extends CustomPainter {
     for (int i = 0; i < data.length; i++) {
       final pointData = data[i];
       final x = padding + (i * xScale);
-      final y = size.height -
-          padding -
-          labelHeight -
-          ((pointData.value - minValue) * yScale);
+      final y = size.height - padding - labelHeight - ((pointData.value - minValue) * yScale);
 
       if (isFirst) {
         path.moveTo(x, y);
@@ -252,19 +318,19 @@ class _LineChartPainter extends CustomPainter {
     canvas.drawPath(path, paint);
   }
 
-  void _drawPoints(Canvas canvas, Size size) {
-    final maxValue = data.map((d) => d.value).reduce(math.max);
-    final minValue = data.map((d) => d.value).reduce(math.min);
-    final padding = 40.0;
-    final labelHeight = 30.0;
-    final valueHeight = 20.0;
-    final chartWidth = size.width - (padding * 2);
-    final chartHeight = size.height - (padding * 2) - labelHeight - valueHeight;
+  void _drawPoints(Canvas canvas, Size size, Map<String, double> valueMap) {
+    // final maxValue = valueMap['maxValue']!;
+    final minValue = valueMap['minValue']!;
+    final padding = valueMap['padding']!;
+    final labelHeight = valueMap['labelHeight']!;
+    // const valueHeight = 20.0;
+    // final chartWidth = valueMap['chartWidth']!;
+    // final chartHeight = valueMap['chartHeight']!;
 
     // 스케일 계산
-    final xScale = chartWidth / (data.length - 1);
-    final valueRange = maxValue - minValue;
-    final yScale = chartHeight / valueRange;
+    final xScale = valueMap['xScale']!;
+    // final valueRange = valueMap['valueRange']!;
+    final yScale = valueMap['yScale']!;
 
     final paint = Paint()
       ..color = lineColor
@@ -274,10 +340,7 @@ class _LineChartPainter extends CustomPainter {
     for (int i = 0; i < data.length; i++) {
       final pointData = data[i];
       final x = padding + (i * xScale);
-      final y = size.height -
-          padding -
-          labelHeight -
-          ((pointData.value - minValue) * yScale);
+      final y = size.height - padding - labelHeight - ((pointData.value - minValue) * yScale);
 
       // 원 그리기
       canvas.drawCircle(Offset(x, y), 4.0, paint);
@@ -291,11 +354,11 @@ class _LineChartPainter extends CustomPainter {
     }
   }
 
-  void _drawLabels(Canvas canvas, Size size) {
-    final padding = 40.0;
-    final labelHeight = 30.0;
-    final chartWidth = size.width - (padding * 2);
-    final xScale = chartWidth / (data.length - 1);
+  void _drawLabels(Canvas canvas, Size size, Map<String, double> valueMap) {
+    final padding = valueMap['padding']!;
+    final labelHeight = valueMap['labelHeight']!;
+    // final chartWidth = valueMap['chartWidth']!;
+    final xScale = valueMap['xScale']!;
 
     // 각 라벨 그리기
     for (int i = 0; i < data.length; i++) {
